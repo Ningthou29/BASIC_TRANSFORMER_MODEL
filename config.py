@@ -7,9 +7,11 @@ def get_config():
         "batch_size":8,
         "num_epochs": 20,
         "lr" : 10**-4,
+        "d_model" : 256,
         "seq_len" : 128,
         "lang_src": "en",
-        "lang_tgt" : "it",
+        "lang_tgt": "mni",          # Change to "mni" for Meitei script, or "rom" for Romanized
+        "excel_file_path": "TEST.xlsx", # Path to your Excel file
         "model_folder" : "weights",
         "model_basename": "tmodel_",
         "preload" : None,

@@ -10,7 +10,7 @@ import math
 #EACH TOKEN (WORD PIECES ) HAS AN ID
 
 class InputEmbeddings(nn.Module):
-    def __init(self,d_model: int,vocab_size : int):
+    def __init__(self,d_model: int,vocab_size : int):
         #d_model is the dimension of the model of dtype = int
         #vocab_size is the size of the vocabulary we will use
         super().__init__()
@@ -28,31 +28,30 @@ class InputEmbeddings(nn.Module):
 # ADDING ANOTHER VECTOR TO THE INPUT EMBEDDINGS OF THE SAME DIM/SIZE
 
 class PostionalEncoding(nn.Module):
-    def __init__(self,d_model:int,seq_len: int,dropout: float) -> None:
+    def __init__(self,d_model:int,dropout: float = 0.1,max_len: int = 5000) -> None:
         #seq_len = maximum no. of tokens(words) the model can process at one time
         #dropout = Dropout is a regularization technique used to prevent overfitting 
         #in neural networks by randomly "turning off" a fraction of neurons during training.
         super().__init__()
         self.d_model = d_model
-        self.seq_len = seq_len
         self.dropout = nn.Dropout(dropout)
 
         #create a matrix of shape(seq_len,d_model)
-        pe = torch.zeros(seq_len,d_model)
+        pe = torch.zeros(max_len,d_model)
         #create a vector of shape(seq_len)
-        position = torch.arange(0,seq_len,dtype = torch.float32).reshape(-1,1) #(seq_len,-1)
+        position = torch.arange(0,max_len,dtype = torch.float32).reshape(-1,1) #(seq_len,-1)
         div_term = torch.exp(torch.arange(0,d_model,2).float() * (-math.log(10000.0)/d_model) )
         # apply the sin to even 
         pe[:,0::2] = torch.sin(position*div_term)
         pe[:,1::2] = torch.cos(position * div_term)
 
-        pe = pe.reshape(1,seq_len,d_model)
+        pe = pe.unsqueeze(0)
         #for broadcasting
         self.register_buffer('pe',pe)
         #this way the tensor will be save in the file along with the state of the model
     
     def forward(self,x):
-        x = x + (self.pe[: , x.shape[1], :]).requires_grad(False)
+        x = x + self.pe[:, :x.shape[1], :].detach()
         # x.shape give the seq_len of the sentence
         return self.dropout(x)
 
@@ -64,7 +63,7 @@ class PostionalEncoding(nn.Module):
 
 class LayerNormalization(nn.Module):
     def __init__(self,eps : float = 10**-6) -> None:
-        super().__init()
+        super().__init__()
         self.eps = eps
         self.alpha = nn.Parameter(torch.ones(1)) #multiplicative identity 
         self.bias = nn.Parameter(torch.zeros(1)) #additive identity
@@ -78,7 +77,7 @@ class LayerNormalization(nn.Module):
 # we can also use the nn.LayerNorm
 class FeedForward(nn.Module):
     def __init__(self,d_model:int,d_ff: int,dropout):
-        super().__init()
+        super().__init__()
         self.linear1 = nn.Linear(d_model,d_ff)
         self.dropout = nn.Dropout(dropout)
         self.linear2 = nn.Linear(d_ff,d_model)
@@ -214,6 +213,7 @@ class ProjectionLayer(nn.Module):
 #TRANSFORMER BLOCK:
 class Transformer(nn.Module):
     def __init__(self,encoder: Encoder,decoder: Decoder,src_embed: InputEmbeddings,tgt_embed: InputEmbeddings,src_pos:PostionalEncoding,tgt_pos:PostionalEncoding,projectionlayer : ProjectionLayer) -> None:
+        super().__init__()
         self.encoder = encoder
         self.decoder = decoder
         self.src_embed = src_embed
@@ -237,8 +237,8 @@ class Transformer(nn.Module):
 def build_transformer(
     src_vocab_size: int, 
     tgt_vocab_size: int, 
-    src_seq_len: int, 
-    tgt_seq_len: int, 
+    src_seq_len: int = 5000, 
+    tgt_seq_len: int = 5000, 
     d_model: int = 512, 
     N: int = 6, 
     h: int = 8, 
@@ -251,8 +251,8 @@ def build_transformer(
     tgt_embed = InputEmbeddings(d_model, tgt_vocab_size)
     
     # 2. Create the positional encoding layers
-    src_pos = PostionalEncoding(d_model, src_seq_len, dropout)
-    tgt_pos = PostionalEncoding(d_model, tgt_seq_len, dropout)
+    src_pos = PostionalEncoding(d_model, dropout, 5000)
+    tgt_pos = PostionalEncoding(d_model,dropout, 5000)
     
     # 3. Create the encoder blocks stack
     encoder_blocks = []
