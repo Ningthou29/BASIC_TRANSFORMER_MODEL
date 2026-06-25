@@ -21,13 +21,13 @@ import pandas as pd
 # THE WORD LEVEL TOKENIZER 
 # WHICH CREATES TOKEN FOR EVERYWORD USING WHITESPACES
 def greedy_decode(model,source,source_mask,tokenizer_src,tokenizer_tgt,max_len,device):
-    sos_idx = tokenizer_src.token_to_id('[SOS]')
+    sos_idx = tokenizer_tgt.token_to_id('[SOS]')
     eos_idx = tokenizer_tgt.token_to_id('[EOS]')
 
     #Precompute the encoder output and reuse it for every token we get from the decoder
     encoder_output = model.encode(source,source_mask)
     # initialize the decoder input with the sos token 
-    decoder_input = torch.empty(1,1).fill_(sos_idx).type_as(source).to(device)
+    decoder_input = torch.empty(1,1,dtype = torch.int64).fill_(sos_idx).type_as(source).to(device)
     while True:
         if decoder_input.size(1) == max_len:
             break

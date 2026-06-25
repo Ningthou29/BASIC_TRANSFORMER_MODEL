@@ -11,7 +11,7 @@ def get_config():
         "seq_len" : 128,
         "lang_src": "en",
         "lang_tgt": "mni",          # Change to "mni" for Meitei script, or "rom" for Romanized
-        "excel_file_path": "TEST.xlsx", # Path to your Excel file
+        "excel_file_path": "FILE2.xlsx", # Path to your Excel file
         "model_folder" : "weights",
         "model_basename": "tmodel_",
         "preload" : None,

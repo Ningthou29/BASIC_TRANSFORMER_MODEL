@@ -15,9 +15,9 @@ class BilingualDataset(Dataset):
         self.seq_len = seq_len
 
         # Fixed: Changed torch.Tensor to torch.tensor, removed inner list brackets, set dtype to int64
-        self.sos_token = torch.tensor([tokenizer_src.token_to_id('[SOS]')], dtype=torch.int64)
-        self.eos_token = torch.tensor([tokenizer_src.token_to_id('[EOS]')], dtype=torch.int64)
-        self.pad_token = torch.tensor([tokenizer_src.token_to_id('[PAD]')], dtype=torch.int64)
+        self.sos_token = torch.tensor([tokenizer_tgt.token_to_id('[SOS]')], dtype=torch.int64)
+        self.eos_token = torch.tensor([tokenizer_tgt.token_to_id('[EOS]')], dtype=torch.int64)
+        self.pad_token = torch.tensor([tokenizer_tgt.token_to_id('[PAD]')], dtype=torch.int64)
     def __len__(self):
         return len(self.ds)
     def __getitem__(self,index : Any) -> Any:
@@ -28,7 +28,7 @@ class BilingualDataset(Dataset):
 
         enc_input_tokens = self.tokenizer_src.encode(src_text).ids
         # this is convert the tokens into ids 
-        dec_input_tokens = self.tokenizer_tgt.encode(src_text).ids
+        dec_input_tokens = self.tokenizer_tgt.encode(tgt_text).ids
         # same herer as above 
 
         enc_num_padding_tokens = self.seq_len - len(enc_input_tokens) - 2

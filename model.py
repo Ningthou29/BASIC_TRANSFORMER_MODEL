@@ -21,6 +21,9 @@ class InputEmbeddings(nn.Module):
     def forward(self,x):
         #x is the object which will be converted into the input embeddings
         return self.embedding(x) * math.sqrt(self.d_model)
+        # this is done so that the semantic meaning is not wash out 
+        # as on adding the positional encoding to the input embedinngs the 
+        # the value is washout thereby losing the semantic meaning 
 
 #POSITIONAL ENCODING
 #THIS IS TO CONVEY THE INFORMATION ABOUT THE POSITION OF EACH WORD
@@ -45,7 +48,7 @@ class PostionalEncoding(nn.Module):
         pe[:,0::2] = torch.sin(position*div_term)
         pe[:,1::2] = torch.cos(position * div_term)
 
-        pe = pe.unsqueeze(0)
+        pe = pe.unsqueeze(0) #add a new dim along the first indexing
         #for broadcasting
         self.register_buffer('pe',pe)
         #this way the tensor will be save in the file along with the state of the model
@@ -57,8 +60,8 @@ class PostionalEncoding(nn.Module):
 
 #LAYER NORMALIZATION:
 #batch of 3 items:
-# for each item in the batch we calculale the mean and the variance
-# LayerNorm fixes this by normalizing the inputs to have a mean of 0 and a variance of 1.
+#for each item in the batch we calculale the mean and the variance
+#LayerNorm fixes this by normalizing the inputs to have a mean of 0 and a variance of 1.
 
 
 class LayerNormalization(nn.Module):
