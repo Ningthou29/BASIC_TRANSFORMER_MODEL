@@ -96,6 +96,7 @@ def get_all_sentences(ds,lang):
 
 def load_parallel_corpus_excel(file_path):
     df = pd.read_excel(file_path)
+    df.columns = df.columns.str.strip()
     data = []
     for _, row in df.iterrows():
         # Clean data: Skip the row if any of the three columns are missing/NaN
